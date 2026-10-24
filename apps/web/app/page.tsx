@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { BarChart3, Cpu, Gauge, Play, RefreshCw, ShieldCheck, TimerReset, TrendingUp, LogOut, Download } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? (
+  process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000'
+);
 const STORAGE_KEY = 'prontos-auth';
 
 type AuthUser = {

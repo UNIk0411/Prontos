@@ -42,21 +42,22 @@ Copy `.env.example` to `.env` and set a unique `PRONTOS_JWT_SECRET` before using
 
 Local development uses SQLite. Hosted deployments should use a managed database; SQLite on a hosting provider's ephemeral filesystem can lose data after restarts or redeploys. A horizontally scaled production deployment should also use a shared session/token strategy, TLS termination, and a dedicated workload executor.
 
-### Free demo deployment with Vercel, Render, and Neon
+### Free full-stack deployment with Vercel and Neon
 
-The frontend and API are separate deployable services, but visitors use one Vercel website URL. This free-tier setup uses Render's free API service and Neon Postgres so application data does not rely on Render's temporary local filesystem. Render may suspend an idle free service, so its first request after inactivity can take around a minute. Free-tier quotas and terms can change.
+The root [vercel.json](./vercel.json) deploys the Next.js frontend and FastAPI backend together as Vercel Services behind one website URL. Neon Postgres stores data outside the serverless function filesystem. Vercel Services are currently in Beta and available on all plans; Hobby usage limits and provider terms apply. This is a demo deployment, not a production SLA or horizontally scalable simulation worker system.
 
-1. In Vercel, import `UNIk0411/Prontos` and select **`web` (Next.js)**. Set **Root Directory** to `apps/web`.
-2. Create a free project at [Neon](https://neon.tech/). Choose the Singapore region if available to reduce API-to-database latency. Copy the connection string from Neon's **Connect** dialog, selecting the pooled connection option if offered. Keep this value private.
-3. Create a Render Blueprint from the same GitHub repository using [render.yaml](./render.yaml). When prompted, set:
-   - `PRONTOS_DATABASE_URL`: the Neon Postgres connection string (keep the `sslmode=require` parameter).
-   - `PRONTOS_CORS_ORIGINS`: your exact Vercel production origin, e.g. `https://your-project.vercel.app` (no trailing slash).
-   - `PRONTOS_BOOTSTRAP_ADMIN_EMAIL`, `PRONTOS_BOOTSTRAP_ADMIN_USERNAME`, and `PRONTOS_BOOTSTRAP_ADMIN_PASSWORD`: your production administrator; use a unique password of at least 12 characters.
-   - Render generates `PRONTOS_JWT_SECRET`. Keep it secret and do not reuse development values.
-4. After Render finishes deploying, copy the API service's HTTPS URL. In Vercel project settings, set `NEXT_PUBLIC_API_URL` to that URL (no trailing slash) for Production, then redeploy the Vercel project.
-5. Open the Vercel URL, sign in with the bootstrap administrator, and verify the API is healthy at `<Render API URL>/api/health`.
+1. Create a free project at [Neon](https://neon.tech/). Choose Singapore if available, then copy the pooled connection string from Neon's **Connect** dialog. Keep `sslmode=require` and keep the string private.
+2. In Vercel, import `UNIk0411/Prontos` (or open its existing project), select branch `main`, and set **Root Directory** to `.` (the repository root). Do not set it to `apps/web`; Vercel needs the root `vercel.json` to configure both services. Vercel routes `/api/*` to FastAPI and other paths to Next.js.
+3. In the Vercel project's **Environment Variables**, add for Production:
+   - `PRONTOS_DATABASE_URL`: the Neon pooled connection string.
+   - `PRONTOS_ENV`: `production`.
+   - `PRONTOS_JWT_SECRET`: a unique random value of at least 32 characters.
+   - `PRONTOS_CORS_ORIGINS`: your exact Vercel website origin, e.g. `https://your-project.vercel.app` (no trailing slash).
+   - `PRONTOS_BOOTSTRAP_ADMIN_EMAIL`, `PRONTOS_BOOTSTRAP_ADMIN_USERNAME`, and `PRONTOS_BOOTSTRAP_ADMIN_PASSWORD`: your own administrator details; use a unique password of at least 12 characters.
+4. Remove any old `NEXT_PUBLIC_API_URL` value that points to Render. The frontend uses the same-origin `/api` routes in production; local development continues to use `http://localhost:8000`.
+5. Redeploy from `main`. Check `<your Vercel URL>/api/health`, then sign in with the bootstrap email and password you set in Vercel. Do not use the local demo credentials.
 
-The Render Blueprint deliberately has no persistent disk; Neon stores the database outside Render. This is a free-tier demo setup, not a production SLA or a horizontally scalable production architecture, and the race-strategy simulator remains unvalidated. Check the current free-tier limits at [Render](https://render.com/docs/free) and [Neon](https://neon.com/pricing). Keep the Vercel origin and API URL in sync when adding a custom domain.
+Vercel Functions are request-based and have execution limits; this setup is for trying the app and short simulations, not long-running jobs or persistent workers. Neon Free has quotas and scales to zero when idle. Review current [Vercel plan limits](https://vercel.com/pricing) and [Neon pricing](https://neon.com/pricing). The race-strategy simulator remains unvalidated.
 
 ## Race strategy prototype
 
