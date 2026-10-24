@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: prontos-api
+    runtime: docker
+    plan: 0.5c-512mb
+    region: singapore
+    dockerContext: ./apps/api
+    dockerfilePath: ./apps/api/Dockerfile
+    healthCheckPath: /api/health
+    disk:
+      name: prontos-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PRONTOS_ENV
+        value: production
+      - key: PRONTOS_DB_PATH
+        value: /var/data/prontos.db
+      - key: PRONTOS_JWT_SECRET
+        generateValue: true
+      - key: PRONTOS_CORS_ORIGINS
+        sync: false
+      - key: PRONTOS_BOOTSTRAP_ADMIN_EMAIL
+        sync: false
+      - key: PRONTOS_BOOTSTRAP_ADMIN_USERNAME
+        sync: false
+      - key: PRONTOS_BOOTSTRAP_ADMIN_PASSWORD
+        sync: false

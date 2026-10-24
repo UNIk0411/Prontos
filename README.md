@@ -42,6 +42,20 @@ Copy `.env.example` to `.env` and set a unique `PRONTOS_JWT_SECRET` before using
 
 The included deployment uses SQLite and is intended for a single-instance deployment/demo. A horizontally scaled production deployment should use a managed database, shared session/token strategy, TLS termination, and a dedicated workload executor.
 
+### Deploy one user-facing website with Vercel and Render
+
+The frontend and API are separate deployable services, but visitors use one Vercel website URL. SQLite requires a persistent disk, so the API runs as one Render instance; do not scale this API service to multiple instances.
+
+1. In Vercel, import `UNIk0411/Prontos` and select **`web` (Next.js)**. Set **Root Directory** to `apps/web`.
+2. Create a Render Blueprint from the same GitHub repository using [render.yaml](./render.yaml). It provisions a paid `0.5c-512mb` web service in Singapore so Render can attach the declared persistent disk. During setup, provide:
+   - `PRONTOS_CORS_ORIGINS`: your exact Vercel production origin, e.g. `https://your-project.vercel.app` (no trailing slash).
+   - `PRONTOS_BOOTSTRAP_ADMIN_EMAIL`, `PRONTOS_BOOTSTRAP_ADMIN_USERNAME`, and `PRONTOS_BOOTSTRAP_ADMIN_PASSWORD`: your production administrator; use a unique password of at least 12 characters.
+   - Render generates `PRONTOS_JWT_SECRET`. Keep it secret and do not reuse development values.
+3. After Render finishes deploying, copy the API service's HTTPS URL. In Vercel project settings, set `NEXT_PUBLIC_API_URL` to that URL (no trailing slash) for Production, then redeploy the Vercel project.
+4. Open the Vercel URL, sign in with the bootstrap administrator, and verify the API is healthy at `<Render API URL>/api/health`.
+
+The Render disk is mounted at `/var/data`; the API database is stored at `/var/data/prontos.db`. The configured persistent-disk service plan is paid; free ephemeral instances are not suitable for keeping this SQLite database. This arrangement is a single-instance demo deployment, not a horizontally scalable production architecture or a production-validated race simulator. Keep the Vercel origin and API URL in sync when adding a custom domain.
+
 ## Race strategy prototype
 
 Experiments can use the `Race strategy simulation` category to evaluate a simple deterministic pit strategy from lap count, baseline lap time, fuel use, tire wear, pit loss, and maximum stint length. The optimizer chooses feasible pit laps; manual mode accepts explicit pit laps through the API or UI. Results include per-lap timing, fuel, tire age, and pit-stop records.
