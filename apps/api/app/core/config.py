@@ -8,6 +8,7 @@ DB_PATH = BASE_DIR / 'data' / 'prontos.db'
 
 
 class Settings(BaseModel):
+    database_url: str = os.getenv('PRONTOS_DATABASE_URL', '')
     db_path: str = os.getenv('PRONTOS_DB_PATH', str(DB_PATH))
     jwt_secret: str = os.getenv('PRONTOS_JWT_SECRET', 'prontos-local-development-secret')
     api_cors_origins: list[str] = [

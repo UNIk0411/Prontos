@@ -40,21 +40,23 @@ Copy `.env.example` to `.env` and set a unique `PRONTOS_JWT_SECRET` before using
 - Container images for both the API and web app are defined in [apps/api/Dockerfile](apps/api/Dockerfile) and [apps/web/Dockerfile](apps/web/Dockerfile)
 - Start locally with `docker compose up --build`
 
-The included deployment uses SQLite and is intended for a single-instance deployment/demo. A horizontally scaled production deployment should use a managed database, shared session/token strategy, TLS termination, and a dedicated workload executor.
+Local development uses SQLite. Hosted deployments should use a managed database; SQLite on a hosting provider's ephemeral filesystem can lose data after restarts or redeploys. A horizontally scaled production deployment should also use a shared session/token strategy, TLS termination, and a dedicated workload executor.
 
-### Deploy one user-facing website with Vercel and Render
+### Free demo deployment with Vercel, Render, and Neon
 
-The frontend and API are separate deployable services, but visitors use one Vercel website URL. SQLite requires a persistent disk, so the API runs as one Render instance; do not scale this API service to multiple instances.
+The frontend and API are separate deployable services, but visitors use one Vercel website URL. This free-tier setup uses Render's free API service and Neon Postgres so application data does not rely on Render's temporary local filesystem. Render may suspend an idle free service, so its first request after inactivity can take around a minute. Free-tier quotas and terms can change.
 
 1. In Vercel, import `UNIk0411/Prontos` and select **`web` (Next.js)**. Set **Root Directory** to `apps/web`.
-2. Create a Render Blueprint from the same GitHub repository using [render.yaml](./render.yaml). It provisions a paid `0.5c-512mb` web service in Singapore so Render can attach the declared persistent disk. During setup, provide:
+2. Create a free project at [Neon](https://neon.tech/). Choose the Singapore region if available to reduce API-to-database latency. Copy the connection string from Neon's **Connect** dialog, selecting the pooled connection option if offered. Keep this value private.
+3. Create a Render Blueprint from the same GitHub repository using [render.yaml](./render.yaml). When prompted, set:
+   - `PRONTOS_DATABASE_URL`: the Neon Postgres connection string (keep the `sslmode=require` parameter).
    - `PRONTOS_CORS_ORIGINS`: your exact Vercel production origin, e.g. `https://your-project.vercel.app` (no trailing slash).
    - `PRONTOS_BOOTSTRAP_ADMIN_EMAIL`, `PRONTOS_BOOTSTRAP_ADMIN_USERNAME`, and `PRONTOS_BOOTSTRAP_ADMIN_PASSWORD`: your production administrator; use a unique password of at least 12 characters.
    - Render generates `PRONTOS_JWT_SECRET`. Keep it secret and do not reuse development values.
-3. After Render finishes deploying, copy the API service's HTTPS URL. In Vercel project settings, set `NEXT_PUBLIC_API_URL` to that URL (no trailing slash) for Production, then redeploy the Vercel project.
-4. Open the Vercel URL, sign in with the bootstrap administrator, and verify the API is healthy at `<Render API URL>/api/health`.
+4. After Render finishes deploying, copy the API service's HTTPS URL. In Vercel project settings, set `NEXT_PUBLIC_API_URL` to that URL (no trailing slash) for Production, then redeploy the Vercel project.
+5. Open the Vercel URL, sign in with the bootstrap administrator, and verify the API is healthy at `<Render API URL>/api/health`.
 
-The Render disk is mounted at `/var/data`; the API database is stored at `/var/data/prontos.db`. The configured persistent-disk service plan is paid; free ephemeral instances are not suitable for keeping this SQLite database. This arrangement is a single-instance demo deployment, not a horizontally scalable production architecture or a production-validated race simulator. Keep the Vercel origin and API URL in sync when adding a custom domain.
+The Render Blueprint deliberately has no persistent disk; Neon stores the database outside Render. This is a free-tier demo setup, not a production SLA or a horizontally scalable production architecture, and the race-strategy simulator remains unvalidated. Check the current free-tier limits at [Render](https://render.com/docs/free) and [Neon](https://neon.com/pricing). Keep the Vercel origin and API URL in sync when adding a custom domain.
 
 ## Race strategy prototype
 

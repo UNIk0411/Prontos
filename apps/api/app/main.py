@@ -41,18 +41,26 @@ def ensure_database() -> None:
                 if column_name not in existing:
                     connection.execute(text(f'ALTER TABLE {table} ADD COLUMN {column_name} {column_type}'))
 
-        connection.execute(
-            text(
-                "INSERT OR IGNORE INTO organizations "
-                "(id, name, cpu_quota, memory_quota, budget_quota, created_at) "
-                "VALUES ('prontos-demo', 'PRONTOS Demo', 16, 12, 1000, :created_at)"
-            ),
-            {'created_at': datetime.utcnow()},
-        )
-        for table in ('users', 'experiments', 'workers'):
-            connection.execute(
-                text(f"UPDATE {table} SET organization_id = 'prontos-demo' WHERE organization_id IS NULL")
+    db = SessionLocal()
+    try:
+        if db.get(Organization, 'prontos-demo') is None:
+            db.add(Organization(
+                id='prontos-demo',
+                name='PRONTOS Demo',
+                cpu_quota=16,
+                memory_quota=12,
+                budget_quota=1000,
+                created_at=datetime.utcnow(),
+            ))
+            db.flush()
+        for model in (User, Experiment, Worker):
+            db.query(model).filter(model.organization_id.is_(None)).update(
+                {model.organization_id: 'prontos-demo'},
+                synchronize_session=False,
             )
+        db.commit()
+    finally:
+        db.close()
 
     db = SessionLocal()
     try:

@@ -3,8 +3,20 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 
 from app.db.models import Experiment, Job, Organization, User, Worker
-from app.db.session import SessionLocal
+from app.db.session import SessionLocal, build_engine
 from app.main import app
+
+
+def test_database_engine_supports_sqlite_and_postgres_urls(tmp_path) -> None:
+    sqlite_engine = build_engine('', str(tmp_path / 'nested' / 'prontos.db'))
+    assert sqlite_engine.dialect.name == 'sqlite'
+
+    postgres_engine = build_engine('postgres://user:pass@example.test/db', '')
+    assert postgres_engine.dialect.name == 'postgresql'
+    assert postgres_engine.url.drivername == 'postgresql+psycopg'
+
+    sqlite_engine.dispose()
+    postgres_engine.dispose()
 
 
 def test_health_check() -> None:
