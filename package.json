@@ -1,0 +1,16 @@
+{
+  "name": "prontos-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:web": "npm --prefix apps/web run dev",
+    "dev:api": "cd apps/api && py -3.11 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "build:web": "npm --prefix apps/web run build",
+    "install:api": "cd apps/api && py -3.11 -m pip install -r requirements.txt",
+    "test:api": "cd apps/api && py -3.11 -m pytest",
+    "start:web": "npm --prefix apps/web run start",
+    "start:api": "cd apps/api && py -3.11 -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
+  }
+}

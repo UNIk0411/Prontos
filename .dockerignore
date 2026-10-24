@@ -1,0 +1,11 @@
+node_modules
+.npm
+.next
+.pytest_cache
+__pycache__
+*.pyc
+.git
+.vscode
+apps/web/node_modules
+apps/api/.venv
+apps/api/data

@@ -1,0 +1,34 @@
+services:
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      PRONTOS_ENV: ${PRONTOS_ENV:-development}
+      PRONTOS_JWT_SECRET: ${PRONTOS_JWT_SECRET:-prontos-local-development-secret}
+      PRONTOS_CORS_ORIGINS: ${PRONTOS_CORS_ORIGINS:-http://localhost:3000}
+      PRONTOS_DB_PATH: /data/prontos.db
+      PRONTOS_BOOTSTRAP_ADMIN_EMAIL: ${PRONTOS_BOOTSTRAP_ADMIN_EMAIL:-}
+      PRONTOS_BOOTSTRAP_ADMIN_USERNAME: ${PRONTOS_BOOTSTRAP_ADMIN_USERNAME:-}
+      PRONTOS_BOOTSTRAP_ADMIN_PASSWORD: ${PRONTOS_BOOTSTRAP_ADMIN_PASSWORD:-}
+    volumes:
+      - ./apps/api/data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      api:
+        condition: service_healthy

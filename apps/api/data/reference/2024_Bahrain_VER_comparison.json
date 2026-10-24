@@ -1,0 +1,170 @@
+{
+  "analysis_status": "EXPLORATORY_NOT_VALIDATION",
+  "model": "race-strategy-v1",
+  "reference": {
+    "lap_count": 57,
+    "first_lap": 1,
+    "last_lap": 57,
+    "median_lap_time_seconds_excluding_pit_out": 95.6,
+    "observed_pit_after_laps": [
+      17,
+      37
+    ],
+    "observed_stop_count": 2,
+    "stints": [
+      {
+        "stint_number": 1,
+        "lap_start": 1,
+        "lap_end": 17,
+        "lap_count": 17,
+        "tire_compound": "SOFT",
+        "median_lap_time_seconds_excluding_pit_out": 97.038
+      },
+      {
+        "stint_number": 2,
+        "lap_start": 18,
+        "lap_end": 37,
+        "lap_count": 20,
+        "tire_compound": "HARD",
+        "median_lap_time_seconds_excluding_pit_out": 95.581
+      },
+      {
+        "stint_number": 3,
+        "lap_start": 38,
+        "lap_end": 57,
+        "lap_count": 20,
+        "tire_compound": "SOFT",
+        "median_lap_time_seconds_excluding_pit_out": 94.667
+      }
+    ]
+  },
+  "model_setup": {
+    "base_lap_time_seconds_assumed": 95.6,
+    "max_stint_laps_assumed": 35,
+    "fuel_inputs": "Artificial feasibility placeholders; fuel is not calibrated from the CSV.",
+    "tire_and_pit_inputs": "Sensitivity values supplied by the caller; not measured from this race."
+  },
+  "strategy_scenarios": [
+    {
+      "pit_loss_seconds_assumed": 18,
+      "tire_wear_seconds_per_lap_of_age_assumed": 0.03,
+      "suggested_pit_laps": [
+        28
+      ],
+      "suggested_stop_count": 1,
+      "matches_observed_pit_laps": false,
+      "matches_observed_stop_count": false
+    },
+    {
+      "pit_loss_seconds_assumed": 18,
+      "tire_wear_seconds_per_lap_of_age_assumed": 0.06,
+      "suggested_pit_laps": [
+        28
+      ],
+      "suggested_stop_count": 1,
+      "matches_observed_pit_laps": false,
+      "matches_observed_stop_count": false
+    },
+    {
+      "pit_loss_seconds_assumed": 18,
+      "tire_wear_seconds_per_lap_of_age_assumed": 0.09,
+      "suggested_pit_laps": [
+        28
+      ],
+      "suggested_stop_count": 1,
+      "matches_observed_pit_laps": false,
+      "matches_observed_stop_count": false
+    },
+    {
+      "pit_loss_seconds_assumed": 18,
+      "tire_wear_seconds_per_lap_of_age_assumed": 0.12,
+      "suggested_pit_laps": [
+        28
+      ],
+      "suggested_stop_count": 1,
+      "matches_observed_pit_laps": false,
+      "matches_observed_stop_count": false
+    },
+    {
+      "pit_loss_seconds_assumed": 22,
+      "tire_wear_seconds_per_lap_of_age_assumed": 0.03,
+      "suggested_pit_laps": [
+        28
+      ],
+      "suggested_stop_count": 1,
+      "matches_observed_pit_laps": false,
+      "matches_observed_stop_count": false
+    },
+    {
+      "pit_loss_seconds_assumed": 22,
+      "tire_wear_seconds_per_lap_of_age_assumed": 0.06,
+      "suggested_pit_laps": [
+        28
+      ],
+      "suggested_stop_count": 1,
+      "matches_observed_pit_laps": false,
+      "matches_observed_stop_count": false
+    },
+    {
+      "pit_loss_seconds_assumed": 22,
+      "tire_wear_seconds_per_lap_of_age_assumed": 0.09,
+      "suggested_pit_laps": [
+        28
+      ],
+      "suggested_stop_count": 1,
+      "matches_observed_pit_laps": false,
+      "matches_observed_stop_count": false
+    },
+    {
+      "pit_loss_seconds_assumed": 22,
+      "tire_wear_seconds_per_lap_of_age_assumed": 0.12,
+      "suggested_pit_laps": [
+        28
+      ],
+      "suggested_stop_count": 1,
+      "matches_observed_pit_laps": false,
+      "matches_observed_stop_count": false
+    },
+    {
+      "pit_loss_seconds_assumed": 26,
+      "tire_wear_seconds_per_lap_of_age_assumed": 0.03,
+      "suggested_pit_laps": [
+        28
+      ],
+      "suggested_stop_count": 1,
+      "matches_observed_pit_laps": false,
+      "matches_observed_stop_count": false
+    },
+    {
+      "pit_loss_seconds_assumed": 26,
+      "tire_wear_seconds_per_lap_of_age_assumed": 0.06,
+      "suggested_pit_laps": [
+        28
+      ],
+      "suggested_stop_count": 1,
+      "matches_observed_pit_laps": false,
+      "matches_observed_stop_count": false
+    },
+    {
+      "pit_loss_seconds_assumed": 26,
+      "tire_wear_seconds_per_lap_of_age_assumed": 0.09,
+      "suggested_pit_laps": [
+        28
+      ],
+      "suggested_stop_count": 1,
+      "matches_observed_pit_laps": false,
+      "matches_observed_stop_count": false
+    },
+    {
+      "pit_loss_seconds_assumed": 26,
+      "tire_wear_seconds_per_lap_of_age_assumed": 0.12,
+      "suggested_pit_laps": [
+        28
+      ],
+      "suggested_stop_count": 1,
+      "matches_observed_pit_laps": false,
+      "matches_observed_stop_count": false
+    }
+  ],
+  "interpretation": "A matching stop count or pit-lap plan is only a sensitivity observation. It is not evidence of predictive accuracy because the model assumptions are not calibrated, observed race strategy is not necessarily time-optimal, and race context is absent."
+}

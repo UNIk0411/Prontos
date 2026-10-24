@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+data/*.db
+data/*.db-*
+data/fastf1-cache/
+data/reference/*
+!data/reference/*.csv
+!data/reference/*_comparison.json
