@@ -17,3 +17,6 @@ apps/api/.pytest_cache/
 test-results/
 playwright-report/
 *.tsbuildinfo
+.neon
+.agents/
+skills-lock.json

@@ -5,6 +5,7 @@
     "apps/*"
   ],
   "scripts": {
+    "build": "npm run build:web",
     "dev:web": "npm --prefix apps/web run dev",
     "dev:api": "cd apps/api && py -3.11 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
     "build:web": "npm --prefix apps/web run build",
@@ -12,5 +13,9 @@
     "test:api": "cd apps/api && py -3.11 -m pytest",
     "start:web": "npm --prefix apps/web run start",
     "start:api": "cd apps/api && py -3.11 -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
+  },
+  "dependencies": {
+    "@neon/config": "^1.9.3",
+    "@neon/env": "^1.6.4"
   }
 }

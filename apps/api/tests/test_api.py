@@ -1,7 +1,11 @@
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
+from app.core.auth import seed_users
+from app.core.config import Settings, default_environment, settings
+from app.db.base import Base
 from app.db.models import Experiment, Job, Organization, User, Worker
 from app.db.session import SessionLocal, build_engine
 from app.main import app
@@ -17,6 +21,54 @@ def test_database_engine_supports_sqlite_and_postgres_urls(tmp_path) -> None:
 
     sqlite_engine.dispose()
     postgres_engine.dispose()
+
+
+def test_database_url_accepts_neon_environment_variable(monkeypatch) -> None:
+    monkeypatch.delenv('PRONTOS_DATABASE_URL', raising=False)
+    monkeypatch.setenv('DATABASE_URL', 'postgresql://neon.example/db')
+    assert Settings().database_url == 'postgresql://neon.example/db'
+
+
+def test_remote_database_defaults_to_production(monkeypatch) -> None:
+    monkeypatch.delenv('PRONTOS_ENV', raising=False)
+    monkeypatch.delenv('VERCEL', raising=False)
+    monkeypatch.setenv('DATABASE_URL', 'postgresql://neon.example/db')
+    assert default_environment() == 'production'
+
+
+def test_production_bootstrap_admin_is_added_when_database_has_other_users(monkeypatch, tmp_path) -> None:
+    test_engine = build_engine('', str(tmp_path / 'bootstrap.db'))
+    Base.metadata.create_all(bind=test_engine)
+    with Session(test_engine) as db:
+        db.add(Organization(
+            id='prontos-demo',
+            name='PRONTOS Demo',
+            cpu_quota=16,
+            memory_quota=12,
+            budget_quota=1000,
+        ))
+        db.add(User(
+            id='user-existing',
+            organization_id='prontos-demo',
+            email='existing@example.test',
+            username='existing',
+            password_hash='existing-hash',
+            role='admin',
+            is_active=True,
+        ))
+        db.commit()
+        monkeypatch.setattr(settings, 'environment', 'production')
+        monkeypatch.setattr(settings, 'bootstrap_admin_email', 'new-admin@example.test')
+        monkeypatch.setattr(settings, 'bootstrap_admin_username', 'new-admin')
+        monkeypatch.setattr(settings, 'bootstrap_admin_password', 'a-unique-test-password')
+
+        seed_users(db)
+
+        admin = db.query(User).filter(User.email == 'new-admin@example.test').one()
+        assert admin.role == 'platform_admin'
+        assert admin.is_active
+        assert db.query(User).count() == 2
+    test_engine.dispose()
 
 
 def test_health_check() -> None:

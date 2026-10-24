@@ -57,36 +57,55 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 
 def seed_users(db: Session) -> None:
-    if db.query(User).count() > 0:
-        if settings.environment.lower() != 'production':
-            demo_admin = db.query(User).filter(User.email == 'admin@prontos.local').first()
-            if demo_admin is not None and demo_admin.role == 'admin':
-                demo_admin.role = 'platform_admin'
-                db.commit()
-        return
-
     if settings.environment.lower() == 'production':
-        if (
-            not settings.bootstrap_admin_email
-            or not settings.bootstrap_admin_username
-            or len(settings.bootstrap_admin_password) < 12
-        ):
+        email = settings.bootstrap_admin_email.strip().lower()
+        username = settings.bootstrap_admin_username.strip()
+        if email:
+            admin = db.query(User).filter(User.email == email).first()
+            if admin is not None:
+                if admin.role != 'platform_admin' or not admin.is_active:
+                    raise RuntimeError(
+                        'The configured bootstrap administrator already exists but is not an active platform administrator'
+                    )
+                return
+            if not username or len(settings.bootstrap_admin_password) < 12:
+                raise RuntimeError(
+                    'Set PRONTOS_BOOTSTRAP_ADMIN_USERNAME and a 12-character '
+                    'PRONTOS_BOOTSTRAP_ADMIN_PASSWORD to create the production administrator'
+                )
+            username_owner = db.query(User).filter(User.username == username).first()
+            if username_owner is not None:
+                raise RuntimeError('PRONTOS_BOOTSTRAP_ADMIN_USERNAME is already in use')
+            db.add(User(
+                id=f'user-{username}',
+                organization_id='prontos-demo',
+                email=email,
+                username=username,
+                password_hash=hash_password(settings.bootstrap_admin_password),
+                role='platform_admin',
+                is_active=True,
+            ))
+            db.commit()
+            return
+        if db.query(User).count() == 0:
             raise RuntimeError(
                 'Set PRONTOS_BOOTSTRAP_ADMIN_EMAIL, PRONTOS_BOOTSTRAP_ADMIN_USERNAME, '
                 'and a 12-character PRONTOS_BOOTSTRAP_ADMIN_PASSWORD before first production startup'
             )
-        defaults = [(
-            settings.bootstrap_admin_email.strip().lower(),
-            settings.bootstrap_admin_username.strip(),
-            settings.bootstrap_admin_password,
-            'platform_admin',
-        )]
-    else:
-        defaults = [
-            ('admin@prontos.local', 'admin', 'admin123', 'platform_admin'),
-            ('operator@prontos.local', 'operator', 'operator123', 'operator'),
-            ('viewer@prontos.local', 'viewer', 'viewer123', 'viewer'),
-        ]
+        return
+
+    if db.query(User).count() > 0:
+        demo_admin = db.query(User).filter(User.email == 'admin@prontos.local').first()
+        if demo_admin is not None and demo_admin.role == 'admin':
+            demo_admin.role = 'platform_admin'
+            db.commit()
+        return
+
+    defaults = [
+        ('admin@prontos.local', 'admin', 'admin123', 'platform_admin'),
+        ('operator@prontos.local', 'operator', 'operator123', 'operator'),
+        ('viewer@prontos.local', 'viewer', 'viewer123', 'viewer'),
+    ]
 
     for email, username, password, role in defaults:
         db.add(User(

@@ -14,6 +14,17 @@ PRONTOS is a locally runnable engineering simulation orchestration platform. It 
    npm run dev:web
 5. Open http://localhost:3000
 
+### Use the linked Neon database locally
+
+Install the Neon CLI with `npm i -g neon@latest`, then link this repository to its Neon project and PostgreSQL branch:
+
+```sh
+neon init -y --org-id org-small-sun-52118135 --project-id fancy-surf-92277450 --branch production --services postgres
+neon deploy
+```
+
+The CLI writes `DATABASE_URL` and `DATABASE_URL_UNPOOLED` to the root `.env.local`; that file is git-ignored. The API loads this file and uses the pooled `DATABASE_URL` for SQLAlchemy/psycopg. The unpooled URL is reserved for schema migrations and administration. When a remote database URL is configured, the API defaults to production mode and requires a strong `PRONTOS_JWT_SECRET`, explicit `PRONTOS_CORS_ORIGINS`, and bootstrap administrator values instead of creating local demo accounts. Vercel does not read your local `.env.local`, so add the pooled `DATABASE_URL` and other production variables to the Vercel project's Production environment separately.
+
 ### Default login credentials
 
 - admin@prontos.local / admin123 (platform administrator)
@@ -49,7 +60,7 @@ The root [vercel.json](./vercel.json) deploys the Next.js frontend and FastAPI b
 1. Create a free project at [Neon](https://neon.tech/). Choose Singapore if available, then copy the pooled connection string from Neon's **Connect** dialog. Keep `sslmode=require` and keep the string private.
 2. In Vercel, import `UNIk0411/Prontos` (or open its existing project), select branch `main`, and set **Root Directory** to `.` (the repository root). Do not set it to `apps/web`; Vercel needs the root `vercel.json` to configure both services. Vercel routes `/api/*` to FastAPI and other paths to Next.js.
 3. In the Vercel project's **Environment Variables**, add for Production:
-   - `PRONTOS_DATABASE_URL`: the Neon pooled connection string.
+   - `DATABASE_URL`: the Neon pooled connection string (`PRONTOS_DATABASE_URL` is also accepted by the API).
    - `PRONTOS_ENV`: `production`.
    - `PRONTOS_JWT_SECRET`: a unique random value of at least 32 characters.
    - `PRONTOS_CORS_ORIGINS`: your exact Vercel website origin, e.g. `https://your-project.vercel.app` (no trailing slash).
